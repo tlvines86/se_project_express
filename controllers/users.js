@@ -28,7 +28,8 @@ const getUserById = (req, res) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return res.status(404).json({ message: "User not found" });
-      } else if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return res.status(400).json({ message: "Invalid user ID format" });
       }
       return res.status(500).json({ message: "Internal server error" });
