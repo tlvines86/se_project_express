@@ -3,7 +3,7 @@ const User = require("../models/user");
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).json(users))
-    .catch((err) => res.status(500).json({ error: err.message }));
+    .catch((err) => res.status(500).json({ message: err.message }));
 };
 
 const createUser = (req, res) => {
@@ -13,9 +13,9 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(400).json({ error: err.message });
+        return res.status(400).json({ message: err.message });
       }
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ message: err.message });
     });
 };
 
@@ -27,11 +27,11 @@ const getUserById = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ message: "User not found" });
       } else if (err.name === "CastError") {
-        return res.status(400).json({ error: "Invalid user ID format" });
+        return res.status(400).json({ message: "Invalid user ID format" });
       }
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ message: "Internal server error" });
     });
 };
 
