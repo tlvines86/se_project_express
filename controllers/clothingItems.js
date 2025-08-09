@@ -45,12 +45,11 @@ const likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .then((item) => {
-      if (!item) {
-        return res.status(404).json({ message: "Item not found" });
-      }
-      return res.status(200).json(item);
-    })
+    .then((item) =>
+      item
+        ? res.status(200).json(item)
+        : res.status(404).json({ message: "Item not found" })
+    )
     .catch((err) => {
       console.error(err);
       return res.status(500).json({ message: "Error liking item" });
