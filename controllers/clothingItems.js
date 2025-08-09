@@ -49,11 +49,11 @@ const likeItem = (req, res) => {
       if (!item) {
         return res.status(404).json({ message: "Item not found" });
       }
-      res.status(200).json(item);
+      return res.status(200).json(item);
     })
     .catch((err) => {
       console.error(err);
-      res.status(500).json({ message: "Error liking item" });
+      return res.status(500).json({ message: "Error liking item" });
     });
 };
 
