@@ -39,8 +39,8 @@ const deleteClothingItemById = (req, res) => {
     });
 };
 
-const likeItem = (req, res) => {
-  return ClothingItem.findByIdAndUpdate(
+const likeItem = (req, res) =>
+  ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
@@ -54,7 +54,6 @@ const likeItem = (req, res) => {
       console.error(err);
       return res.status(500).json({ message: "Error liking item" });
     });
-};
 
 const dislikeItem = async (req, res) => {
   try {
