@@ -3,11 +3,11 @@ const {
   BAD_REQUEST_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
   INTERNAL_SERVER_ERROR_CODE,
-  UNAUTHORIZED_ERROR_CODE, // add this in utils/errors.js = 401
+  UNAUTHORIZED_ERROR_CODE,
 } = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
-  ClothingItem.find({})
+  return ClothingItem.find({})
     .then((items) => res.status(200).json(items))
     .catch((err) => {
       console.error(err);

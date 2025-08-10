@@ -8,11 +8,12 @@ const {
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).json(users))
-    .catch((err) =>
+    .catch((err) => {
+      console.error(err);
       res
         .status(INTERNAL_SERVER_ERROR_CODE)
-        .json({ message: "Internal server error" })
-    );
+        .json({ message: "Internal server error" });
+    });
 };
 
 const createUser = (req, res) => {
