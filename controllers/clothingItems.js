@@ -26,7 +26,7 @@ const createClothingItem = (req, res) => {
       .json({ message: "Unauthorized: User not authenticated" });
   }
 
-  ClothingItem.create({
+  return ClothingItem.create({
     name,
     weather,
     imageUrl,
