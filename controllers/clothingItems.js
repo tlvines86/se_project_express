@@ -6,8 +6,8 @@ const {
   UNAUTHORIZED_ERROR_CODE,
 } = require("../utils/errors");
 
-const getClothingItems = (req, res) => {
-  return ClothingItem.find({})
+const getClothingItems = (req, res) =>
+  ClothingItem.find({})
     .then((items) => res.status(200).json(items))
     .catch((err) => {
       console.error(err);
@@ -15,7 +15,6 @@ const getClothingItems = (req, res) => {
         .status(INTERNAL_SERVER_ERROR_CODE)
         .json({ message: "Internal server error" });
     });
-};
 
 const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
@@ -84,6 +83,11 @@ const likeItem = (req, res) =>
     )
     .catch((err) => {
       console.error(err);
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST_ERROR_CODE)
+          .json({ message: "Invalid item ID format" });
+      }
       return res
         .status(INTERNAL_SERVER_ERROR_CODE)
         .json({ message: "Error liking item" });
@@ -96,17 +100,24 @@ const dislikeItem = async (req, res) => {
       { $pull: { likes: req.user._id } },
       { new: true }
     );
+
     if (!item) {
       return res
         .status(NOT_FOUND_ERROR_CODE)
         .send({ message: "Item not found." });
     }
+
     return res.status(200).send(item);
   } catch (err) {
     console.error(err);
+    if (err.name === "CastError") {
+      return res
+        .status(BAD_REQUEST_ERROR_CODE)
+        .json({ message: "Invalid item ID format" });
+    }
     return res
       .status(INTERNAL_SERVER_ERROR_CODE)
-      .send({ message: "An error occurred." });
+      .json({ message: "Error disliking item" });
   }
 };
 
