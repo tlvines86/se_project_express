@@ -1,8 +1,11 @@
 const router = require("express").Router();
+const auth = require("../middlewares/auth");
 const { NOT_FOUND_ERROR_CODE } = require("../utils/errors");
 
 const userRouter = require("./users");
 const clothingItemsRouter = require("./clothingItems");
+
+router.use(auth);
 
 router.use("/users", userRouter);
 router.use("/items", clothingItemsRouter);
