@@ -10,8 +10,6 @@ const {
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-const UNAUTHORIZED_ERROR_CODE = 401;
-
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).json(users))
