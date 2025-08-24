@@ -4,6 +4,7 @@ const {
   NOT_FOUND_ERROR_CODE,
   INTERNAL_SERVER_ERROR_CODE,
   UNAUTHORIZED_ERROR_CODE,
+  FORBIDDEN_ERROR_CODE,
 } = require("../utils/errors");
 
 const getClothingItems = (req, res) =>
@@ -47,15 +48,20 @@ const createClothingItem = (req, res) => {
 
 const deleteClothingItemById = (req, res) => {
   const { itemId } = req.params;
+  const userId = req.user._id;
 
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
+    .orFail()
     .then((item) => {
-      if (!item) {
+      if (item.owner.toString() !== userId) {
         return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .json({ message: "Clothing item not found" });
+          .status(FORBIDDEN_ERROR_CODE)
+          .json({ message: "You do not have permission to delete this item" });
       }
-      return res.status(200).json({ message: "Item deleted successfully" });
+
+      return ClothingItem.findByIdAndDelete(itemId).then(() =>
+        res.status(200).json({ message: "Item deleted successfully" })
+      );
     })
     .catch((err) => {
       console.error(err);
@@ -63,6 +69,11 @@ const deleteClothingItemById = (req, res) => {
         return res
           .status(BAD_REQUEST_ERROR_CODE)
           .json({ message: "Invalid item ID format" });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(NOT_FOUND_ERROR_CODE)
+          .json({ message: "Clothing item not found" });
       }
       return res
         .status(INTERNAL_SERVER_ERROR_CODE)

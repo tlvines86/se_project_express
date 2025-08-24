@@ -35,15 +35,11 @@ const createUser = (req, res) => {
         password: hash,
       })
     )
-    .then((user) =>
-      res.status(201).json({
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        email: user.email,
-        _id: user._id,
-      })
-    )
+    .then((user) => {
+      const userObject = user.toObject();
+      delete userObject.password;
+      res.status(201).json(userObject);
+    })
     .catch((err) => {
       console.error(err);
 
@@ -65,21 +61,78 @@ const createUser = (req, res) => {
 
 const getUserById = (req, res) => {
   const { userId } = req.params;
+
   User.findById(userId)
     .orFail()
     .then((user) => res.status(200).json(user))
     .catch((err) => {
       console.error(err);
+
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(NOT_FOUND_ERROR_CODE)
           .json({ message: "User not found" });
       }
+
       if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST_ERROR_CODE)
           .json({ message: "Invalid user ID format" });
       }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .json({ message: "Internal server error" });
+    });
+};
+
+const getCurrentUser = (req, res) => {
+  const userId = req.user._id;
+
+  User.findById(userId)
+    .orFail()
+    .then((user) => res.status(200).json(user))
+    .catch((err) => {
+      console.error(err);
+
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(NOT_FOUND_ERROR_CODE)
+          .json({ message: "User not found" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .json({ message: "Internal server error" });
+    });
+};
+
+const updateUserProfile = (req, res) => {
+  const { name, avatar } = req.body;
+  const userId = req.user._id;
+
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
+    .orFail()
+    .then((user) => res.status(200).json(user))
+    .catch((err) => {
+      console.error(err);
+
+      if (err.name === "ValidationError") {
+        return res
+          .status(BAD_REQUEST_ERROR_CODE)
+          .json({ message: "Invalid data" });
+      }
+
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(NOT_FOUND_ERROR_CODE)
+          .json({ message: "User not found" });
+      }
+
       return res
         .status(INTERNAL_SERVER_ERROR_CODE)
         .json({ message: "Internal server error" });
@@ -103,4 +156,11 @@ const login = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUserById, login };
+module.exports = {
+  getUsers,
+  createUser,
+  getUserById,
+  getCurrentUser,
+  updateUserProfile,
+  login,
+};
