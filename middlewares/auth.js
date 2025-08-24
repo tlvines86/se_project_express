@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+
 const { JWT_SECRET } = process.env;
 
 const auth = (req, res, next) => {
@@ -27,7 +28,7 @@ const auth = (req, res, next) => {
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    next();
+    return next();
   } catch (err) {
     return res.status(401).json({ message: "Unauthorized: Invalid token" });
   }
