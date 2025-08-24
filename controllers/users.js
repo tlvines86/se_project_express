@@ -5,6 +5,8 @@ const {
   BAD_REQUEST_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
   INTERNAL_SERVER_ERROR_CODE,
+  UNAUTHORIZED_ERROR_CODE,
+  CONFLICT_ERROR_CODE,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -44,7 +46,9 @@ const createUser = (req, res) => {
       console.error(err);
 
       if (err.code === 11000) {
-        return res.status(409).json({ message: "Email already exists" });
+        return res
+          .status(CONFLICT_ERROR_CODE)
+          .json({ message: "Email already exists" });
       }
 
       if (err.name === "ValidationError") {
@@ -141,6 +145,12 @@ const updateUserProfile = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST_ERROR_CODE)
+      .json({ message: "Email and password are required" });
+  }
 
   User.findUserByCredentials(email, password)
     .then((user) => {

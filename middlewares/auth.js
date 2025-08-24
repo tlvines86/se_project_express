@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
-
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET } = require("../utils/config"); // <- import from config
 
 const auth = (req, res, next) => {
   const publicRoutes = [
@@ -13,9 +12,7 @@ const auth = (req, res, next) => {
     (route) => route.method === req.method && route.path === req.path
   );
 
-  if (isPublic) {
-    return next();
-  }
+  if (isPublic) return next();
 
   const { authorization } = req.headers;
 
@@ -29,7 +26,7 @@ const auth = (req, res, next) => {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
     return next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ message: "Unauthorized: Invalid token" });
   }
 };
