@@ -10,26 +10,14 @@ const {
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).json(users))
-    .catch((err) => {
-      console.error(err);
-      res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .json({ message: "Internal server error" });
-    });
-};
-
 const createUser = (req, res) => {
-  const { name, about, avatar, email, password } = req.body;
+  const { name, avatar, email, password } = req.body;
 
   bcrypt
     .hash(password, 10)
     .then((hash) =>
       User.create({
         name,
-        about,
         avatar,
         email,
         password: hash,
@@ -53,33 +41,6 @@ const createUser = (req, res) => {
         return res
           .status(BAD_REQUEST_ERROR_CODE)
           .json({ message: "Invalid user data" });
-      }
-
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .json({ message: "Internal server error" });
-    });
-};
-
-const getUserById = (req, res) => {
-  const { userId } = req.params;
-
-  User.findById(userId)
-    .orFail()
-    .then((user) => res.status(200).json(user))
-    .catch((err) => {
-      console.error(err);
-
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .json({ message: "User not found" });
-      }
-
-      if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_ERROR_CODE)
-          .json({ message: "Invalid user ID format" });
       }
 
       return res
@@ -157,17 +118,23 @@ const login = (req, res) => {
       });
       res.send({ token });
     })
-    .catch(() => {
-      res
-        .status(UNAUTHORIZED_ERROR_CODE)
-        .json({ message: "Incorrect email or password" });
+    .catch((err) => {
+      console.error(err);
+
+      if (err.message.includes("Incorrect email or password")) {
+        return res
+          .status(UNAUTHORIZED_ERROR_CODE)
+          .json({ message: "Incorrect email or password" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR_CODE)
+        .json({ message: "Internal server error" });
     });
 };
 
 module.exports = {
-  getUsers,
   createUser,
-  getUserById,
   getCurrentUser,
   updateUserProfile,
   login,

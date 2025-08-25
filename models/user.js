@@ -7,21 +7,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: 2,
     maxlength: 30,
-    default: "Jacques Cousteau",
-  },
-  about: {
-    type: String,
-    minlength: 2,
-    maxlength: 30,
-    default: "Explorer",
+    required: true,
   },
   avatar: {
     type: String,
-    default: "https://pictures.s3.yandex.net/resources/avatar_1604080799.jpg",
+    required: true,
     validate: {
-      validator(v) {
-        return /^https?:\/\/[^\s]+$/i.test(v);
-      },
+      validator: (v) => validator.isURL(v),
       message: "Invalid URL format",
     },
   },
@@ -37,7 +29,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Password is required"],
-    minlength: 6,
     select: false,
   },
 });

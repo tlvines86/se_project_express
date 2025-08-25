@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../utils/config"); // <- import from config
+const { JWT_SECRET } = require("../utils/config");
+const { UNAUTHORIZED_ERROR_CODE } = require("../utils/errors");
 
 const auth = (req, res, next) => {
   const publicRoutes = [
@@ -12,12 +13,16 @@ const auth = (req, res, next) => {
     (route) => route.method === req.method && route.path === req.path
   );
 
-  if (isPublic) return next();
+  if (isPublic) {
+    return next();
+  }
 
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized: No token provided" });
+    return res
+      .status(UNAUTHORIZED_ERROR_CODE)
+      .json({ message: "Unauthorized: No token provided" });
   }
 
   const token = authorization.replace("Bearer ", "");
@@ -27,7 +32,9 @@ const auth = (req, res, next) => {
     req.user = payload;
     return next();
   } catch {
-    return res.status(401).json({ message: "Unauthorized: Invalid token" });
+    return res
+      .status(UNAUTHORIZED_ERROR_CODE)
+      .json({ message: "Unauthorized: Invalid token" });
   }
 };
 
