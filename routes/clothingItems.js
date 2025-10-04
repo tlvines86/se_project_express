@@ -9,7 +9,7 @@ const {
 const {
   validateClothingItem,
   validateIdParam,
-} = require("../middleware/validation");
+} = require("../middlewares/validation");
 
 router.post("/", validateClothingItem, createClothingItem);
 
