@@ -2,15 +2,15 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const {
-  BAD_REQUEST_ERROR_CODE,
-  NOT_FOUND_ERROR_CODE,
-  INTERNAL_SERVER_ERROR_CODE,
-  UNAUTHORIZED_ERROR_CODE,
-  CONFLICT_ERROR_CODE,
+  BadRequestError,
+  NotFoundError,
+  ConflictError,
+  InternalServerError,
+  UnauthorizedError,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   bcrypt
@@ -29,48 +29,34 @@ const createUser = (req, res) => {
       res.status(201).json(userObject);
     })
     .catch((err) => {
-      console.error(err);
-
       if (err.code === 11000) {
-        return res
-          .status(CONFLICT_ERROR_CODE)
-          .json({ message: "Email already exists" });
+        return next(new ConflictError("Email already exists"));
       }
-
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST_ERROR_CODE)
-          .json({ message: "Invalid user data" });
+        return next(new BadRequestError("Invalid user data"));
       }
-
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .json({ message: "Internal server error" });
+      return next(new InternalServerError());
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
 
   User.findById(userId)
-    .orFail()
+    .orFail(() => new NotFoundError("User not found"))
     .then((user) => res.status(200).json(user))
     .catch((err) => {
-      console.error(err);
-
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .json({ message: "User not found" });
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid user ID"));
       }
-
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .json({ message: "Internal server error" });
+      if (err.statusCode) {
+        return next(err);
+      }
+      return next(new InternalServerError());
     });
 };
 
-const updateUserProfile = (req, res) => {
+const updateUserProfile = (req, res, next) => {
   const { name, avatar } = req.body;
   const userId = req.user._id;
 
@@ -79,36 +65,24 @@ const updateUserProfile = (req, res) => {
     { name, avatar },
     { new: true, runValidators: true }
   )
-    .orFail()
+    .orFail(() => new NotFoundError("User not found"))
     .then((user) => res.status(200).json(user))
     .catch((err) => {
-      console.error(err);
-
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST_ERROR_CODE)
-          .json({ message: "Invalid data" });
+        return next(new BadRequestError("Invalid data"));
       }
-
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .json({ message: "User not found" });
+      if (err.statusCode) {
+        return next(err);
       }
-
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .json({ message: "Internal server error" });
+      return next(new InternalServerError());
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res
-      .status(BAD_REQUEST_ERROR_CODE)
-      .json({ message: "Email and password are required" });
+    return next(new BadRequestError("Email and password are required"));
   }
 
   User.findUserByCredentials(email, password)
@@ -119,17 +93,10 @@ const login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      console.error(err);
-
       if (err.message.includes("Incorrect email or password")) {
-        return res
-          .status(UNAUTHORIZED_ERROR_CODE)
-          .json({ message: "Incorrect email or password" });
+        return next(new UnauthorizedError("Incorrect email or password"));
       }
-
-      return res
-        .status(INTERNAL_SERVER_ERROR_CODE)
-        .json({ message: "Internal server error" });
+      return next(new InternalServerError());
     });
 };
 
