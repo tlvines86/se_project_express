@@ -12,3 +12,9 @@ This is the beginning of implementing and understand databases that will be link
 ### Testing
 
 Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
+
+## Accessing the Application
+
+- **Frontend:** [https://www.wtwrtlv.twilightparadox.com](https://www.wtwrtlv.twilightparadox.com)
+- **Backend:** API endpoints are available under `https://api.wtwrtlv.twilightparadox.com`
+- **Frontend GitHub Repository:** [https://github.com/tlvines86/se_project_react](https://github.com/tlvines86/se_project_react)
