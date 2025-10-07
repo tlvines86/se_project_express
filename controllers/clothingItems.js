@@ -5,7 +5,7 @@ const {
   InternalServerError,
   UnauthorizedError,
   ForbiddenError,
-} = require("../utils/errors");
+} = require("../errors");
 
 const getClothingItems = (req, res, next) =>
   ClothingItem.find({})
@@ -19,7 +19,7 @@ const createClothingItem = (req, res, next) => {
     return next(new UnauthorizedError("User not authenticated"));
   }
 
-  ClothingItem.create({
+  return ClothingItem.create({
     name,
     weather,
     imageUrl,
@@ -46,7 +46,6 @@ const deleteClothingItemById = (req, res, next) => {
           "You do not have permission to delete this item"
         );
       }
-
       return ClothingItem.findByIdAndDelete(itemId).then(() =>
         res.status(200).json({ message: "Item deleted successfully" })
       );
@@ -69,43 +68,32 @@ const likeItem = (req, res, next) =>
     { new: true }
   )
     .then((item) => {
-      if (!item) {
-        throw new NotFoundError("Item not found");
-      }
-      res.status(200).json(item);
+      if (!item) throw new NotFoundError("Item not found");
+      return res.status(200).json(item);
     })
     .catch((err) => {
-      if (err.name === "CastError") {
+      if (err.name === "CastError")
         return next(new BadRequestError("Invalid item ID format"));
-      }
-      if (err.statusCode) {
-        return next(err);
-      }
+      if (err.statusCode) return next(err);
       return next(new InternalServerError("Error liking item"));
     });
 
-const dislikeItem = (req, res, next) => {
+const dislikeItem = (req, res, next) =>
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
     { new: true }
   )
     .then((item) => {
-      if (!item) {
-        throw new NotFoundError("Item not found");
-      }
-      res.status(200).json(item);
+      if (!item) throw new NotFoundError("Item not found");
+      return res.status(200).json(item);
     })
     .catch((err) => {
-      if (err.name === "CastError") {
+      if (err.name === "CastError")
         return next(new BadRequestError("Invalid item ID format"));
-      }
-      if (err.statusCode) {
-        return next(err);
-      }
+      if (err.statusCode) return next(err);
       return next(new InternalServerError("Error disliking item"));
     });
-};
 
 module.exports = {
   getClothingItems,
